@@ -65,13 +65,23 @@
     </section>
 
     <section id="tab-calendar" class="tab-panel">
-      <div class="cal-nav">
-        <button id="prevYear" class="icon-btn">◀</button>
-        <div id="calYearLabel" class="cal-month-label"></div>
-        <button id="nextYear" class="icon-btn">▶</button>
+      <div class="cal-view-toggle">
+        <button id="calViewYear" class="cal-view-btn active">Year</button>
+        <button id="calViewMonth" class="cal-view-btn">Month</button>
       </div>
-      <div class="heatmap-wrap">
+      <div class="cal-nav">
+        <button id="calPrev" class="icon-btn">◀</button>
+        <div id="calLabel" class="cal-month-label"></div>
+        <button id="calNext" class="icon-btn">▶</button>
+      </div>
+      <div class="heatmap-wrap" id="heatmapYearView">
         <div class="heatmap-grid" id="heatmapGrid"></div>
+      </div>
+      <div class="month-grid-wrap hidden" id="heatmapMonthView">
+        <div class="month-grid-dow">
+          <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+        </div>
+        <div class="month-grid" id="monthGrid"></div>
       </div>
       <div class="cal-legend">
         <span>Less</span>

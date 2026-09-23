@@ -488,9 +488,29 @@ function renderHistory() {
    Calendar / heatmap tab
 --------------------------------------------------------------------- */
 let calYear = new Date().getFullYear();
+let calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+let calMode = 'year'; // 'year' | 'month'
 
-document.getElementById('prevYear').addEventListener('click', () => { calYear--; renderCalendar(); });
-document.getElementById('nextYear').addEventListener('click', () => { calYear++; renderCalendar(); });
+document.getElementById('calViewYear').addEventListener('click', () => { calMode = 'year'; updateCalViewToggle(); renderCalendar(); });
+document.getElementById('calViewMonth').addEventListener('click', () => { calMode = 'month'; updateCalViewToggle(); renderCalendar(); });
+
+document.getElementById('calPrev').addEventListener('click', () => {
+  if (calMode === 'year') calYear--;
+  else calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1);
+  renderCalendar();
+});
+document.getElementById('calNext').addEventListener('click', () => {
+  if (calMode === 'year') calYear++;
+  else calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1);
+  renderCalendar();
+});
+
+function updateCalViewToggle() {
+  document.getElementById('calViewYear').classList.toggle('active', calMode === 'year');
+  document.getElementById('calViewMonth').classList.toggle('active', calMode === 'month');
+  document.getElementById('heatmapYearView').classList.toggle('hidden', calMode !== 'year');
+  document.getElementById('heatmapMonthView').classList.toggle('hidden', calMode !== 'month');
+}
 
 function levelFor(count) {
   if (count <= 0) return 0;
@@ -501,7 +521,17 @@ function levelFor(count) {
 }
 
 function renderCalendar() {
-  document.getElementById('calYearLabel').textContent = calYear;
+  document.getElementById('calDayDetail').innerHTML = '';
+  if (calMode === 'year') {
+    document.getElementById('calLabel').textContent = calYear;
+    renderYearHeatmap();
+  } else {
+    document.getElementById('calLabel').textContent = `${MONTH_NAMES[calMonth.getMonth()]} ${calMonth.getFullYear()}`;
+    renderMonthHeatmap();
+  }
+}
+
+function renderYearHeatmap() {
   const grid = document.getElementById('heatmapGrid');
   grid.innerHTML = '';
 
@@ -524,8 +554,32 @@ function renderCalendar() {
     grid.appendChild(cell);
     d = addDays(d, 1);
   }
+}
 
-  document.getElementById('calDayDetail').innerHTML = '';
+function renderMonthHeatmap() {
+  const grid = document.getElementById('monthGrid');
+  grid.innerHTML = '';
+
+  const counts = {};
+  entries.forEach(e => { counts[e.date] = (counts[e.date] || 0) + 1; });
+
+  const firstOfMonth = new Date(calMonth.getFullYear(), calMonth.getMonth(), 1);
+  const gridStart = mondayOf(firstOfMonth);
+  const todayStr = todayISO();
+
+  for (let i = 0; i < 42; i++) {
+    const d = addDays(gridStart, i);
+    const iso = toISO(d);
+    const inMonth = d.getMonth() === calMonth.getMonth();
+    const c = counts[iso] || 0;
+    const cell = document.createElement('div');
+    cell.className = 'month-cell lvl' + (inMonth ? levelFor(c) : 0) + (inMonth ? '' : ' outside') + (iso === todayStr ? ' is-today' : '');
+    cell.innerHTML = `<span class="month-cell-num">${d.getDate()}</span>${c ? `<span class="month-cell-count">${c}</span>` : ''}`;
+    cell.title = `${iso}: ${c} entr${c === 1 ? 'y' : 'ies'}`;
+    cell.addEventListener('click', () => showDayDetail(iso));
+    grid.appendChild(cell);
+    if (i >= 34 && d.getDay() === 0 && addDays(d, 1).getMonth() !== calMonth.getMonth()) break;
+  }
 }
 
 function showDayDetail(iso) {

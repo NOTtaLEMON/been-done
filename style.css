@@ -397,6 +397,14 @@ main#app { max-width: 720px; margin: 0 auto; padding: 16px; }
 .already-logged { margin-bottom: 4px; }
 
 /* ---------------- Calendar / heatmap ---------------- */
+.cal-view-toggle { display: flex; margin-bottom: 14px; border: var(--b4) solid var(--ink); box-shadow: var(--sh-sm); width: max-content; }
+.cal-view-btn {
+  background: var(--panel); border: none; border-right: var(--b3) solid var(--ink);
+  padding: 9px 18px; font-weight: 900; text-transform: uppercase; font-size: 12px; cursor: pointer; color: var(--ink);
+}
+.cal-view-btn:last-child { border-right: none; }
+.cal-view-btn.active { background: var(--accent); color: var(--panel); }
+
 .cal-nav {
   display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
 }
@@ -442,6 +450,51 @@ main#app { max-width: 720px; margin: 0 auto; padding: 16px; }
 .hm-swatch.lvl2 { background: var(--secondary); }
 .hm-swatch.lvl3 { background: var(--accent); }
 .hm-swatch.lvl4 { background: var(--ink); }
+
+.month-grid-wrap {
+  border: var(--b4) solid var(--ink);
+  background: var(--panel);
+  box-shadow: var(--sh-md);
+  padding: 12px;
+}
+
+.month-grid-dow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.month-grid-dow span {
+  text-align: center; font-size: 10px; font-weight: 900; text-transform: uppercase;
+}
+
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.month-cell {
+  position: relative;
+  aspect-ratio: 1;
+  border: var(--b2) solid var(--ink);
+  background: var(--bg);
+  cursor: pointer;
+  padding: 4px;
+}
+.month-cell.lvl1 { background: var(--muted); }
+.month-cell.lvl2 { background: var(--secondary); }
+.month-cell.lvl3 { background: var(--accent); }
+.month-cell.lvl4 { background: var(--ink); }
+.month-cell.lvl4 .month-cell-num { color: var(--bg); }
+.month-cell.outside { opacity: 0.32; }
+.month-cell.is-today { border: var(--b4) solid var(--accent); }
+
+.month-cell-num { font-size: 11px; font-weight: 900; display: block; }
+.month-cell-count {
+  position: absolute; bottom: 3px; right: 4px;
+  font-size: 10px; font-weight: 900;
+}
 
 .cal-legend { font-size: 11px; font-weight: 700; text-transform: uppercase; margin-top: 10px; }
 
