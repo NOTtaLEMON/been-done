@@ -2,7 +2,9 @@
 
 Not a planner. A log of what you actually did, organized Monday–Sunday, with
 stats, a GitHub-style heatmap, and streaks. Static site, no backend, no
-login — everything lives in your browser's localStorage.
+login — everything lives in your browser's localStorage. Neo-brutalist UI
+(thick borders, hard shadows, Space Grotesk), built mobile-first since a work
+log is something you fill in from your phone.
 
 ## Running it
 
@@ -28,9 +30,11 @@ use "Install app" / "Add to Home Screen".
 - **Week view**: Monday–Sunday cards for the current week, entry counts per
   day, "What did I do today?" quick-log button. Navigate to any week to
   back-fill.
-- **Log entries**: free text + optional tag + optional mood emoji. Quick-add
-  chips surface things you've logged more than once, so repeat tasks are one
-  tap.
+- **Log a session**: the log modal works like a todo list — type a task, hit
+  + Add (or Enter), it drops into "This session," and you keep adding as many
+  as you did that day before hitting Save. Each task can carry its own tag and
+  mood. Quick-add chips surface things you've logged more than once, so
+  repeat tasks are one tap.
 - **History**: every entry, searchable and filterable by tag, grouped by day.
 - **Calendar heatmap**: GitHub-contributions-style year view — darker squares
   mean more logged that day. Click any square to see/add entries for it.

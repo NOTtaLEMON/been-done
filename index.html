@@ -6,12 +6,16 @@
 <title>DidIt — Work Log</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body class="layout-auto">
   <header class="topbar">
     <div class="topbar-left">
-      <span class="app-title">✅ DidIt</span>
+      <span class="app-title">DID<span class="app-title-pop">IT</span></span>
+      <span class="app-tagline">past tense only</span>
     </div>
     <div class="topbar-right">
       <span id="streakPill" class="streak-pill hidden" title="Current streak"></span>
@@ -48,7 +52,7 @@
 
       <div id="weekGrid" class="week-grid"></div>
 
-      <button id="logTodayBtn" class="fab">＋ What did I do today?</button>
+      <button id="logTodayBtn" class="fab">+ Log what I did</button>
     </section>
 
     <section id="tab-history" class="tab-panel">

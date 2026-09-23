@@ -177,14 +177,14 @@ function toast(msg) {
    Confetti (milestone celebration)
 --------------------------------------------------------------------- */
 function confetti() {
-  const colors = ['#2563eb', '#16a34a', '#d97706', '#db2777', '#7c3aed'];
+  const colors = ['#FF6B6B', '#FFD93D', '#C4B5FD', '#FFFFFF'];
   for (let i = 0; i < 40; i++) {
     const p = document.createElement('div');
     p.className = 'confetti-piece';
     p.style.left = Math.random() * 100 + 'vw';
     p.style.background = colors[Math.floor(Math.random() * colors.length)];
     p.style.animationDuration = (2 + Math.random() * 1.5) + 's';
-    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    p.style.borderRadius = Math.random() > 0.7 ? '50%' : '0';
     document.body.appendChild(p);
     setTimeout(() => p.remove(), 4000);
   }
@@ -206,29 +206,38 @@ function quickAddSuggestions() {
 function openLogModal(dateISO) {
   const root = document.getElementById('modalRoot');
   const d = fromISO(dateISO);
-  const dayEntries = entriesOn(dateISO);
   const suggestions = quickAddSuggestions();
 
   let selectedTag = '';
   let selectedMood = '';
+  const pending = []; // tasks added this session, not yet saved: {text, tag, mood}
 
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.innerHTML = `
     <div class="modal-box">
       <h2>${fmtDateLabel(d)}</h2>
-      ${dayEntries.length ? `<div id="modalExisting"></div>` : ''}
-      <label>What did you do?</label>
-      <textarea id="modalText" placeholder="e.g. Fixed the login bug, went for a run, called mom…" autofocus></textarea>
+      <div id="modalExisting"></div>
+
+      <label>Add a task / thing you did</label>
+      <div class="task-input-row">
+        <input type="text" id="modalTaskInput" placeholder="e.g. Fixed the login bug" autofocus>
+        <button class="btn-add-task" id="modalAddTaskBtn">+ Add</button>
+      </div>
       ${suggestions.length ? `<div class="chip-row" id="modalChips">${suggestions.map(s => `<button class="chip" data-text="${escapeAttr(s)}">${escapeHtml(s)}</button>`).join('')}</div>` : ''}
-      <label>Tag (optional)</label>
+
+      <label>Tag (optional, applies to next task added)</label>
       <div class="chip-row" id="modalTags">
-        ${tags.map(t => `<button class="chip" data-tag="${escapeAttr(t.name)}" style="border-color:${t.color}">${escapeHtml(t.name)}</button>`).join('')}
+        ${tags.map(t => `<button class="chip" data-tag="${escapeAttr(t.name)}" style="--chip-color:${t.color}">${escapeHtml(t.name)}</button>`).join('')}
       </div>
       <label>Mood (optional)</label>
       <div class="mood-picker" id="modalMood">
         ${MOODS.map(m => `<button data-mood="${m}">${m}</button>`).join('')}
       </div>
+
+      <label>This session</label>
+      <div id="modalPending" class="pending-list"></div>
+
       <label>Date</label>
       <input type="date" id="modalDate" value="${dateISO}">
       <div class="modal-actions">
@@ -241,10 +250,9 @@ function openLogModal(dateISO) {
 
   function renderExisting() {
     const box = document.getElementById('modalExisting');
-    if (!box) return;
     const list = entriesOn(document.getElementById('modalDate').value);
     box.innerHTML = list.length
-      ? `<div style="margin-bottom:10px">${list.map(e => entryRowHTML(e, true)).join('')}</div>`
+      ? `<label>Already logged</label><div class="already-logged">${list.map(e => entryRowHTML(e, true)).join('')}</div>`
       : '';
     box.querySelectorAll('.entry-del').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -256,16 +264,44 @@ function openLogModal(dateISO) {
   }
   renderExisting();
 
+  function renderPending() {
+    const box = document.getElementById('modalPending');
+    box.innerHTML = pending.length
+      ? pending.map((p, i) => pendingRowHTML(p, i)).join('')
+      : `<p class="settings-hint">Nothing added yet — type a task above and hit + Add (or Enter).</p>`;
+    box.querySelectorAll('.pending-del').forEach(btn => {
+      btn.addEventListener('click', () => { pending.splice(Number(btn.dataset.idx), 1); renderPending(); });
+    });
+  }
+  renderPending();
+
+  function addFromInput() {
+    const input = document.getElementById('modalTaskInput');
+    const text = input.value.trim();
+    if (!text) return false;
+    pending.push({ text, tag: selectedTag, mood: selectedMood });
+    input.value = '';
+    renderPending();
+    input.focus();
+    return true;
+  }
+
+  document.getElementById('modalAddTaskBtn').addEventListener('click', addFromInput);
+  document.getElementById('modalTaskInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); addFromInput(); }
+  });
+
   overlay.querySelectorAll('#modalChips .chip').forEach(chip => {
     chip.addEventListener('click', () => {
-      document.getElementById('modalText').value = chip.dataset.text;
+      document.getElementById('modalTaskInput').value = chip.dataset.text;
+      document.getElementById('modalTaskInput').focus();
     });
   });
   overlay.querySelectorAll('#modalTags .chip').forEach(chip => {
     chip.addEventListener('click', () => {
       selectedTag = selectedTag === chip.dataset.tag ? '' : chip.dataset.tag;
       overlay.querySelectorAll('#modalTags .chip').forEach(c => {
-        c.style.background = c.dataset.tag === selectedTag ? (tagByName(selectedTag).color + '33') : '';
+        c.classList.toggle('chip-selected', c.dataset.tag === selectedTag);
       });
     });
   });
@@ -281,13 +317,14 @@ function openLogModal(dateISO) {
   overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
 
   overlay.querySelector('#modalSave').addEventListener('click', () => {
-    const text = document.getElementById('modalText').value.trim();
-    if (!text) { toast('Write something first.'); return; }
+    addFromInput(); // catch anything left typed but not yet added
+    if (!pending.length) { toast('Add at least one thing first.'); return; }
     const useDate = document.getElementById('modalDate').value || dateISO;
     const wasActiveBefore = activeDatesSet().has(useDate);
-    addEntry({ date: useDate, text, tag: selectedTag, mood: selectedMood });
+    pending.forEach(p => addEntry({ date: useDate, text: p.text, tag: p.tag, mood: p.mood }));
+    const count = pending.length;
     overlay.remove();
-    toast('Logged.');
+    toast(`Logged ${count} thing${count > 1 ? 's' : ''}.`);
     checkMilestones(wasActiveBefore);
     refreshCurrentTab();
   });
@@ -304,6 +341,20 @@ function entryRowHTML(e, small) {
         <div class="entry-meta">${e.tag ? escapeHtml(e.tag) + ' · ' : ''}${pad(time.getHours())}:${pad(time.getMinutes())}</div>
       </div>
       ${small ? `<button class="entry-del" data-id="${e.id}">✕</button>` : ''}
+    </div>
+  `;
+}
+
+function pendingRowHTML(p, idx) {
+  const t = tagByName(p.tag);
+  return `
+    <div class="entry-row pending-row">
+      <span class="entry-tag-dot" style="background:${t ? t.color : 'transparent'}"></span>
+      <div class="entry-body">
+        <div class="entry-text">${p.mood ? p.mood + ' ' : ''}${escapeHtml(p.text)}</div>
+        <div class="entry-meta">${p.tag ? escapeHtml(p.tag) : 'Not yet saved'}</div>
+      </div>
+      <button class="entry-del pending-del" data-idx="${idx}">✕</button>
     </div>
   `;
 }
@@ -494,8 +545,8 @@ function showDayDetail(iso) {
    Stats tab — hand-rolled SVG bar charts
 --------------------------------------------------------------------- */
 function svgBarChart(data, opts = {}) {
-  const w = opts.width || 320, h = opts.height || 160;
-  const padL = 28, padB = 22, padT = 10, padR = 10;
+  const w = opts.width || 320, h = opts.height || 170;
+  const padL = 28, padB = 26, padT = 16, padR = 10;
   const innerW = w - padL - padR, innerH = h - padT - padB;
   const max = Math.max(1, ...data.map(d => d.value));
   const barW = innerW / data.length;
@@ -505,12 +556,12 @@ function svgBarChart(data, opts = {}) {
     const x = padL + i * barW + barW * 0.15;
     const bw = barW * 0.7;
     const y = padT + innerH - bh;
-    bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" fill="${d.color || 'var(--accent)'}" rx="3"></rect>`;
-    if (d.value > 0) bars += `<text x="${(x + bw / 2).toFixed(1)}" y="${(y - 4).toFixed(1)}" font-size="10" text-anchor="middle" fill="var(--text-dim)">${d.value}</text>`;
-    labels += `<text x="${(x + bw / 2).toFixed(1)}" y="${h - 6}" font-size="10" text-anchor="middle" fill="var(--text-dim)">${escapeHtml(d.label)}</text>`;
+    bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(bh, 1).toFixed(1)}" fill="${d.color || 'var(--accent)'}" stroke="var(--ink)" stroke-width="2.5"></rect>`;
+    if (d.value > 0) bars += `<text x="${(x + bw / 2).toFixed(1)}" y="${(y - 6).toFixed(1)}" font-size="11" font-weight="900" text-anchor="middle" fill="var(--ink)">${d.value}</text>`;
+    labels += `<text x="${(x + bw / 2).toFixed(1)}" y="${h - 8}" font-size="9.5" font-weight="700" text-anchor="middle" fill="var(--ink)">${escapeHtml(d.label.toUpperCase())}</text>`;
   });
   return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
-    <line x1="${padL}" y1="${padT + innerH}" x2="${w - padR}" y2="${padT + innerH}" stroke="var(--border)" />
+    <line x1="${padL}" y1="${padT + innerH}" x2="${w - padR}" y2="${padT + innerH}" stroke="var(--ink)" stroke-width="3" />
     ${bars}${labels}
   </svg>`;
 }
@@ -576,10 +627,13 @@ function renderWordCloud() {
   const box = document.getElementById('wordCloud');
   if (!top.length) { box.innerHTML = '<p class="settings-hint">Log a few things to see your word cloud.</p>'; return; }
   const maxC = top[0][1];
-  box.innerHTML = top.map(([w, c]) => {
-    const size = 12 + (c / maxC) * 16;
-    return `<span style="font-size:${size.toFixed(0)}px">${escapeHtml(w)}</span>`;
-  }).join(' ');
+  const bgCycle = ['var(--secondary)', 'var(--accent)', 'var(--muted)'];
+  const rotCycle = ['rotate(-2deg)', 'rotate(1.5deg)', 'rotate(-1deg)', 'rotate(2deg)'];
+  box.innerHTML = top.map(([w, c], i) => {
+    const size = 11 + (c / maxC) * 14;
+    const style = `font-size:${size.toFixed(0)}px;background:${bgCycle[i % bgCycle.length]};transform:${rotCycle[i % rotCycle.length]}`;
+    return `<span class="cloud-chip" style="${style}">${escapeHtml(w)}</span>`;
+  }).join('');
 }
 
 const BADGES = [
