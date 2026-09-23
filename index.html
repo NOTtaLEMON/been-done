@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DidIt — Work Log</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="layout-auto">
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="app-title">✅ DidIt</span>
+    </div>
+    <div class="topbar-right">
+      <span id="streakPill" class="streak-pill hidden" title="Current streak"></span>
+      <button id="themeToggle" class="icon-btn" title="Toggle theme">🌓</button>
+      <select id="layoutToggle" class="layout-select" title="Force layout">
+        <option value="layout-auto">Auto</option>
+        <option value="layout-mobile">Phone</option>
+        <option value="layout-desktop">Laptop</option>
+      </select>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabNav">
+    <button class="tab-btn active" data-tab="week">Week</button>
+    <button class="tab-btn" data-tab="history">History</button>
+    <button class="tab-btn" data-tab="calendar">Calendar</button>
+    <button class="tab-btn" data-tab="stats">Stats</button>
+    <button class="tab-btn" data-tab="settings">Settings</button>
+  </nav>
+
+  <main id="app">
+
+    <section id="tab-week" class="tab-panel active">
+      <div class="day-nav">
+        <button id="prevWeek" class="icon-btn">◀</button>
+        <div class="day-nav-label">
+          <div id="weekLabel" class="day-date"></div>
+        </div>
+        <button id="nextWeek" class="icon-btn">▶</button>
+      </div>
+      <button id="jumpThisWeek" class="link-btn">Jump to this week</button>
+
+      <div id="onThisDayCard" class="on-this-day hidden"></div>
+
+      <div id="weekGrid" class="week-grid"></div>
+
+      <button id="logTodayBtn" class="fab">＋ What did I do today?</button>
+    </section>
+
+    <section id="tab-history" class="tab-panel">
+      <div class="history-controls">
+        <input type="search" id="historySearch" placeholder="Search entries…">
+        <select id="historyTagFilter"><option value="">All tags</option></select>
+      </div>
+      <button id="surpriseBtn" class="btn-secondary">🎲 Surprise me (random flashback)</button>
+      <div id="historyList" class="history-list"></div>
+    </section>
+
+    <section id="tab-calendar" class="tab-panel">
+      <div class="cal-nav">
+        <button id="prevYear" class="icon-btn">◀</button>
+        <div id="calYearLabel" class="cal-month-label"></div>
+        <button id="nextYear" class="icon-btn">▶</button>
+      </div>
+      <div class="heatmap-wrap">
+        <div class="heatmap-grid" id="heatmapGrid"></div>
+      </div>
+      <div class="cal-legend">
+        <span>Less</span>
+        <i class="hm-swatch lvl0"></i>
+        <i class="hm-swatch lvl1"></i>
+        <i class="hm-swatch lvl2"></i>
+        <i class="hm-swatch lvl3"></i>
+        <i class="hm-swatch lvl4"></i>
+        <span>More</span>
+      </div>
+      <div id="calDayDetail" class="cal-day-detail"></div>
+    </section>
+
+    <section id="tab-stats" class="tab-panel">
+      <div id="statTiles" class="stat-tiles"></div>
+      <div class="stat-card">
+        <h3>Busiest weekdays</h3>
+        <div id="weekdayChart" class="chart-box"></div>
+      </div>
+      <div class="stat-card">
+        <h3>Last 12 weeks</h3>
+        <div id="weeklyTrendChart" class="chart-box"></div>
+      </div>
+      <div class="stat-card">
+        <h3>By tag</h3>
+        <div id="tagChart" class="chart-box"></div>
+      </div>
+      <div class="stat-card">
+        <h3>Word cloud</h3>
+        <div id="wordCloud" class="word-cloud"></div>
+      </div>
+      <div class="stat-card">
+        <h3>Badges</h3>
+        <div id="badgeGrid" class="badge-grid"></div>
+      </div>
+    </section>
+
+    <section id="tab-settings" class="tab-panel">
+      <div class="settings-block">
+        <h3>Tags</h3>
+        <div id="tagEditor"></div>
+        <div class="add-tag-row">
+          <input type="text" id="newTagName" placeholder="Tag name">
+          <input type="color" id="newTagColor" value="#2563eb">
+          <button id="addTagBtn" class="btn-secondary">+ Add</button>
+        </div>
+      </div>
+
+      <div class="settings-block">
+        <h3>Data</h3>
+        <div class="data-row">
+          <button id="exportBtn" class="btn-secondary">Export backup (.json)</button>
+          <button id="importBtn" class="btn-secondary">Import backup</button>
+          <input type="file" id="importFile" accept="application/json" class="hidden">
+        </div>
+        <div class="data-row">
+          <button id="resetBtn" class="btn-danger">Reset all data</button>
+        </div>
+      </div>
+
+      <div class="settings-block">
+        <h3>About</h3>
+        <p class="settings-hint">DidIt is a past-tense log — not a planner. Everything is stored locally in your browser (localStorage). No account, no server. Export a backup now and then so you don't lose it.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="modalRoot"></div>
+  <div id="toastRoot"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
